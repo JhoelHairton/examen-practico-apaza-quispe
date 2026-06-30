@@ -1,0 +1,37 @@
+<!--
+  ============================================================================
+  local_rules_ssh.xml  |  Laboratorio 2.1 (Regla: Brute Force SSH)
+  Evaluacion Practica Final  |  Seguridad Informatica (Unidad IV)
+  Autor: Jhoel AQ
+
+  Ubicacion en el manager:  /var/ossec/etc/rules/local_rules_ssh.xml
+
+  OBJETIVO
+  ========
+  Detectar un ataque de fuerza bruta SSH: 10 o mas fallos de autenticacion
+  desde la MISMA IP de origen dentro de una ventana de 60 segundos.
+
+  COMO FUNCIONA
+  =============
+  * if_matched_sid 5716 : la regla base 5716 del ruleset de Wazuh corresponde
+    a "sshd: authentication failed" (lineas 'Failed password'). Esta regla
+    compuesta se evalua cada vez que la 5716 dispara.
+  * frequency="10" + timeframe="60" : debe ocurrir 10 veces en 60 s.
+  * same_source_ip : todos los fallos deben venir de la MISMA IP de origen.
+  * level="10" : severidad alta.
+  * group authentication_failures,brute_force : clasificacion solicitada.
+  ============================================================================
+-->
+<group name="local,syslog,sshd,">
+
+  <rule id="100001" level="10" frequency="10" timeframe="60">
+    <if_matched_sid>5716</if_matched_sid>
+    <same_source_ip />
+    <description>Ataque de fuerza bruta SSH detectado desde $(srcip)</description>
+    <group>authentication_failures,brute_force,</group>
+    <mitre>
+      <id>T1110</id> <!-- Brute Force (MITRE ATT&CK) -->
+    </mitre>
+  </rule>
+
+</group>

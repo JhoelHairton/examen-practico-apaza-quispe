@@ -1,0 +1,84 @@
+<!--
+  ============================================================================
+  local_rules_exfil.xml  |  Laboratorio 2.2 (Regla: Exfiltracion de datos)
+  Evaluacion Practica Final  |  Seguridad Informatica (Unidad IV)
+  Autor: Jhoel AQ
+
+  Ubicacion en el manager:  /var/ossec/etc/rules/local_rules_exfil.xml
+
+  OBJETIVO
+  ========
+  Disparar una alerta CRITICA (nivel 14) cuando se detecte una posible
+  exfiltracion de datos, definida como la correlacion de DOS condiciones:
+
+     (A) Un login exitoso fuera del horario laboral (22:00 a 06:00), y
+     (B) una transferencia de datos SALIENTE mayor a 500 MB en una sola
+         conexion desde un host interno,
+
+  ambas ocurridas desde la MISMA IP de origen.
+
+  LOGICA DE CORRELACION (3 reglas encadenadas)
+  ============================================
+     100010  => detecta el login off-hours        (condicion A, "antecedente")
+     100011  => detecta la transferencia masiva    (condicion B, "disparador")
+     100012  => regla COMPUESTA: si ocurre B (100011) y previamente ocurrio A
+                (100010) desde la misma IP dentro de la ventana de tiempo,
+                entonces se genera la alerta critica de exfiltracion.
+
+  NOTA: los IDs >= 100000 son el rango reservado por Wazuh para reglas locales.
+  500 MB se aproxima a 500 000 000 bytes (se compara sobre el campo decodificado
+  bytes_out del log del firewall/netflow).
+  ============================================================================
+-->
+<group name="local,exfiltration,">
+
+  <!-- ===================================================================== -->
+  <!-- (A) ANTECEDENTE: login SSH exitoso fuera del horario laboral.         -->
+  <!--     if_sid 5715 = "sshd: authenticated" (login correcto).             -->
+  <!--     El tag <time> restringe el match a la franja 22:00 a 06:00.       -->
+  <!--     Sirve de "memoria" para correlacionar despues.                    -->
+  <!-- ===================================================================== -->
+  <rule id="100010" level="8">
+    <if_sid>5715</if_sid>
+    <time>10:00 pm - 6:00 am</time>
+    <description>Login SSH exitoso fuera del horario laboral (22:00 a 06:00) desde $(srcip)</description>
+    <group>authentication_success,off_hours,</group>
+  </rule>
+
+  <!-- ===================================================================== -->
+  <!-- (B) DISPARADOR: transferencia saliente masiva (mayor a 500 MB).       -->
+  <!--     decoded_as firewall : evento del firewall/netflow.                -->
+  <!--     <srcip> exige que el origen sea un host INTERNO (rangos RFC1918). -->
+  <!--     field direction = outbound : trafico saliente.                    -->
+  <!--     field bytes_out : regex que captura cifras mayores o iguales a    -->
+  <!--     5e8 bytes (5xx millones, 6 a 9 cientos de millones, o 10+ digitos)-->
+  <!-- ===================================================================== -->
+  <rule id="100011" level="12">
+    <decoded_as>firewall</decoded_as>
+    <srcip>10.0.0.0/8,172.16.0.0/12,192.168.0.0/16</srcip>
+    <field name="direction">outbound</field>
+    <field name="bytes_out">^(?:5\d{8}|[6-9]\d{8}|\d{10,})$</field>
+    <description>Transferencia saliente masiva (&gt; 500 MB) desde host interno $(srcip)</description>
+    <group>data_exfiltration,high_volume,</group>
+  </rule>
+
+  <!-- ===================================================================== -->
+  <!-- (COMPUESTA) EXFILTRACION: B ahora + A previo, misma IP de origen.      -->
+  <!--     if_sid 100011      : el evento actual es la transferencia masiva. -->
+  <!--     if_matched_sid 100010 : hubo un login off-hours antes.            -->
+  <!--     same_source_ip     : ambos eventos del mismo host interno.        -->
+  <!--     timeframe="86400"  : ventana de correlacion de 24 horas.          -->
+  <!--     level="14"         : severidad CRITICA.                           -->
+  <!-- ===================================================================== -->
+  <rule id="100012" level="14" frequency="1" timeframe="86400">
+    <if_sid>100011</if_sid>
+    <if_matched_sid>100010</if_matched_sid>
+    <same_source_ip />
+    <description>CRITICO: Posible exfiltracion de datos (&gt; 500 MB) desde $(srcip) tras un login fuera de horario</description>
+    <group>data_exfiltration,attack,exfiltration,</group>
+    <mitre>
+      <id>T1048</id> <!-- Exfiltration Over Alternative Protocol -->
+    </mitre>
+  </rule>
+
+</group>
