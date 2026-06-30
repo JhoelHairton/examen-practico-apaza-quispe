@@ -1,0 +1,24 @@
+[*] Analizando access.log: D:\Universidad\ciclo 9\Seguridad Informatica\EXAMEN FINAL\examen_final_seguridad_informatica\lab1\access.log
+[*] Peticiones parseadas: 1000
+
+--- ESCANEO DE DIRECTORIOS (> 20 peticiones a rutas distintas en < 60 s) ---
+[ALERTA] IP: 45.33.32.156 — 32 peticiones (19 rutas distintas) en 60 s — Posible escaneo de directorios
+
+--- POSIBLES INTENTOS DE SQL INJECTION ---
+[ALERTA] SQLi desde 193.32.162.55 GET /login?user=admin'--&pass=x (status 500) patrones=['--', "'"]
+[ALERTA] SQLi desde 193.32.162.55 GET /login?user=admin'--&pass=x (status 500) patrones=['--', "'"]
+[ALERTA] SQLi desde 193.32.162.55 GET /search?q=' (status 200) patrones=["'"]
+[ALERTA] SQLi desde 193.32.162.55 GET /search?q=' (status 500) patrones=["'"]
+[ALERTA] SQLi desde 193.32.162.55 GET /search?q=' (status 500) patrones=["'"]
+[ALERTA] SQLi desde 193.32.162.55 GET /login?user=admin'--&pass=x (status 500) patrones=['--', "'"]
+[ALERTA] SQLi desde 193.32.162.55 GET /login?user=admin'--&pass=x (status 500) patrones=['--', "'"]
+[ALERTA] SQLi desde 193.32.162.55 GET /search?q=' (status 500) patrones=["'"]
+
+--- ERRORES 4xx/5xx: 30 IPs con errores (Top 5) ---
+  45.33.32.156       total=  47 (4xx=44, 5xx=3)
+  193.32.162.55      total=  18 (4xx=4, 5xx=14)
+  89.210.135.99      total=  18 (4xx=10, 5xx=8)
+  122.153.40.102     total=  17 (4xx=7, 5xx=10)
+  115.88.85.249      total=  13 (4xx=5, 5xx=8)
+
+[OK] Reporte exportado a: reporte_web.json

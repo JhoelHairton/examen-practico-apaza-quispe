@@ -1,0 +1,25 @@
+[*] Analizando log de autenticación SSH: D:\Universidad\ciclo 9\Seguridad Informatica\EXAMEN FINAL\examen_final_seguridad_informatica\lab1\auth.log
+[*] Intentos fallidos totales: 253 desde 35 IPs únicas.
+
+================================================================
+  TOP 10 IPs CON MÁS INTENTOS DE AUTENTICACIÓN SSH FALLIDOS
+================================================================
+   #  Dirección IP        Intentos
+----------------------------------------------------------------
+   1  45.33.32.156             120   <-- supera umbral
+   2  193.32.162.55             58   <-- supera umbral
+   3  91.240.118.172            30
+   4  172.16.0.70                4
+   5  192.168.1.90               4
+   6  172.16.0.227               3
+   7  172.16.0.76                3
+   8  172.16.0.182               2
+   9  10.0.222.18                2
+  10  192.168.1.108              2
+================================================================
+
+--- ANÁLISIS DE AMENAZAS (umbral: > 50 intentos) ---
+[ALERTA] IP: 45.33.32.156 — 120 intentos fallidos — Posible ataque de fuerza bruta
+[ALERTA] IP: 193.32.162.55 — 58 intentos fallidos — Posible ataque de fuerza bruta
+
+[OK] Reporte exportado a: reporte_ssh.json
