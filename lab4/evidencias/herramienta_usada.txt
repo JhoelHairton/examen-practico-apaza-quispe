@@ -1,0 +1,34 @@
+HERRAMIENTA DE DASHBOARD UTILIZADA — Laboratorio 4
+====================================================
+
+Herramienta : Grafana OSS
+Version      : 10.x  (>= 10.0)
+Opcion       : B (Grafana con datasource Elasticsearch apuntando a Wazuh)
+URL servicio : http://<IP_VM>:3000     (en AWS: http://<IP_PUBLICA_EC2>:3000)
+Usuario      : admin
+
+Fuente de datos:
+  Tipo       : Elasticsearch
+  Indice     : wazuh-alerts-*
+  Time field : @timestamp
+  URL        : https://localhost:9200  (Wazuh Indexer / OpenSearch)
+
+Dashboard:
+  Nombre     : SOC - Monitor de Seguridad
+  UID        : soc-monitor-seguridad
+  Archivo    : ../dashboard_soc.json
+  Rango      : ultimas 24 horas (now-24h a now)
+  Refresh    : cada 1 minuto
+
+Visualizaciones incluidas:
+  V1 (Bar)   : Conteo de alertas por nivel de severidad (rule.level)
+  V2 (Table) : Top 10 IPs de origen con mas alertas (data.srcip)
+  V3 (Line)  : Alertas por hora, ultimas 24h (@timestamp, intervalo 1h)
+  V4 (Pie)   : Distribucion por tipo de regla (rule.groups)
+  + Panel de texto con titulo y datos del autor.
+
+Alerta de umbral (Tarea 4.4):
+  Condicion  : alertas de nivel >= 10 que superen 5 eventos en 5 minutos
+  Notifica   : contact point configurado (webhook / email)
+
+NOTA: completar <IP_VM> / <IP_PUBLICA_EC2> con el valor real al desplegar.

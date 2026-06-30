@@ -1,0 +1,30 @@
+{
+  "apiVersion": 1,
+  "_comentario": "Provisioning de datasource para Grafana. Copiar a /etc/grafana/provisioning/datasources/wazuh.yaml (o configurar igual desde la UI: Connections > Data sources > Add > Elasticsearch). El password va en secureJsonData; NO subir credenciales reales al repo.",
+  "datasources": [
+    {
+      "name": "Wazuh-Elasticsearch",
+      "type": "elasticsearch",
+      "access": "proxy",
+      "url": "https://localhost:9200",
+      "database": "wazuh-alerts-*",
+      "basicAuth": true,
+      "basicAuthUser": "admin",
+      "jsonData": {
+        "esVersion": "8.11.0",
+        "timeField": "@timestamp",
+        "index": "wazuh-alerts-*",
+        "interval": "Daily",
+        "maxConcurrentShardRequests": 5,
+        "logMessageField": "full_log",
+        "logLevelField": "rule.level",
+        "tlsSkipVerify": true
+      },
+      "secureJsonData": {
+        "basicAuthPassword": "<CONTRASENA_DEL_INDEXER>"
+      },
+      "isDefault": true,
+      "editable": true
+    }
+  ]
+}
