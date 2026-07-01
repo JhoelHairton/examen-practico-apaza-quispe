@@ -47,18 +47,18 @@
 
   <!-- ===================================================================== -->
   <!-- (B) DISPARADOR: transferencia saliente masiva (mayor a 500 MB).       -->
-  <!--     decoded_as firewall : evento del firewall/netflow.                -->
-  <!--     <srcip> exige que el origen sea un host INTERNO (rangos RFC1918). -->
-  <!--     field direction = outbound : trafico saliente.                    -->
-  <!--     field bytes_out : regex que captura cifras mayores o iguales a    -->
-  <!--     5e8 bytes (5xx millones, 6 a 9 cientos de millones, o 10+ digitos)-->
+  <!--     Se ancla por TEXTO del log de firewall/netflow con <match> +      -->
+  <!--     <regex>, para NO depender de un decoder externo (asi la regla     -->
+  <!--     carga en cualquier Wazuh, sin necesitar el decoder 'firewall').   -->
+  <!--     <match> direction:outbound = trafico saliente.                    -->
+  <!--     <regex> bytes_out captura cifras >= 5e8 bytes: [5-9] seguido de   -->
+  <!--     8 digitos (5xx a 9xx millones) o 10+ digitos (>= 1000 millones),  -->
+  <!--     es decir >= 500 000 000 bytes ~ 500 MB.                           -->
   <!-- ===================================================================== -->
   <rule id="100011" level="12">
-    <decoded_as>firewall</decoded_as>
-    <srcip>10.0.0.0/8,172.16.0.0/12,192.168.0.0/16</srcip>
-    <field name="direction">outbound</field>
-    <field name="bytes_out">^(?:5\d{8}|[6-9]\d{8}|\d{10,})$</field>
-    <description>Transferencia saliente masiva (&gt; 500 MB) desde host interno $(srcip)</description>
+    <match>direction:outbound</match>
+    <regex type="pcre2">bytes_out:\s*([5-9]\d{8}|\d{10,})</regex>
+    <description>Transferencia saliente masiva (&gt; 500 MB) desde host interno</description>
     <group>data_exfiltration,high_volume,</group>
   </rule>
 
