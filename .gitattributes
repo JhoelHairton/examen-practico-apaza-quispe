@@ -1,3 +1,5 @@
 # Los scripts de shell deben conservar finales de línea LF (se ejecutan en la
 # VM Linux). Evita que autocrlf de Windows los convierta a CRLF y rompa bash.
-*.sh text eol=lf
+*.sh   text eol=lf
+*.yaml text eol=lf
+*.yml  text eol=lf

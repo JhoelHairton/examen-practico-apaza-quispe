@@ -1,0 +1,86 @@
+# =============================================================================
+# alert_rule_soc.yaml  —  Tarea 4.4 (Alerta de umbral) del Laboratorio 4
+# Evaluacion Practica Final — Seguridad Informatica (Unidad IV)
+# Autor: Jhoel AQ
+#
+# Regla de alerta de Grafana (Unified Alerting) que se dispara cuando las
+# alertas de Wazuh de nivel >= 10 superan 5 eventos en una ventana de 5 minutos.
+#
+# COMO USAR (dos opciones):
+#   A) Provisioning: copiar a  /etc/grafana/provisioning/alerting/soc.yaml
+#      y reiniciar Grafana (sudo systemctl restart grafana-server).
+#      Antes, reemplazar <UID_DATASOURCE_ELASTICSEARCH> por el UID real del
+#      datasource (Connections > Data sources > (tu datasource) > la URL
+#      muestra .../datasources/edit/<UID>).
+#   B) UI (equivalente, mas simple para el screenshot SCR-4.4):
+#      Alerting > Alert rules > New alert rule
+#        - Query A (Elasticsearch, wazuh-alerts-*): lucene  rule.level:>=10
+#          metrica: Count ; bucket: Date histogram @timestamp cada 5m
+#        - Expresion B: Reduce (Last/Sum) de A
+#        - Expresion C: Threshold  IS ABOVE 5
+#        - Evaluar cada 1m durante 5m ; Contact point: webhook/email
+#
+# NOTA: el formato de Unified Alerting puede variar levemente entre 10.x y 11.x;
+# ajusta la version si el provisioning reporta error al cargar.
+# =============================================================================
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: SOC-Alertas-Seguridad
+    folder: SOC
+    interval: 1m          # frecuencia de evaluacion
+    rules:
+      - uid: soc-nivel-alto-5m
+        title: "SOC - Alertas nivel >= 10 superan 5 en 5 min"
+        condition: C
+        for: 5m           # debe mantenerse la condicion 5 minutos
+        noDataState: OK
+        execErrState: Error
+        annotations:
+          summary: "Mas de 5 alertas Wazuh de nivel >= 10 en los ultimos 5 minutos"
+          description: "Posible incidente en curso: pico de alertas criticas en el SIEM."
+        labels:
+          severity: critical
+          origen: wazuh
+        data:
+          # --- A: conteo de alertas nivel >= 10 (Elasticsearch) ---------------
+          - refId: A
+            relativeTimeRange:
+              from: 300     # ultimos 300 s (5 min)
+              to: 0
+            datasourceUid: <UID_DATASOURCE_ELASTICSEARCH>
+            model:
+              refId: A
+              query: "rule.level:>=10"
+              alias: ""
+              metrics:
+                - id: "1"
+                  type: count
+              bucketAggs:
+                - id: "2"
+                  type: date_histogram
+                  field: "@timestamp"
+                  settings:
+                    interval: "5m"
+                    min_doc_count: "0"
+              timeField: "@timestamp"
+          # --- B: reduce la serie a un unico valor (suma de la ventana) -------
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: reduce
+              expression: A
+              reducer: sum
+          # --- C: umbral -> dispara si B > 5 ----------------------------------
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [5]

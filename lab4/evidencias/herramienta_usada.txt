@@ -30,5 +30,6 @@ Visualizaciones incluidas:
 Alerta de umbral (Tarea 4.4):
   Condicion  : alertas de nivel >= 10 que superen 5 eventos en 5 minutos
   Notifica   : contact point configurado (webhook / email)
+  Archivo    : ../alert_rule_soc.yaml  (provisioning de Grafana Unified Alerting)
 
 NOTA: completar <IP_VM> / <IP_PUBLICA_EC2> con el valor real al desplegar.
