@@ -365,6 +365,59 @@
           "timeField": "@timestamp"
         }
       ]
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "V5 - Eventos recientes (Raw Data) - exportar 20 registros a CSV (Tarea 4.1)",
+      "description": "Panel auxiliar para la Tarea 4.1: muestra los ultimos eventos crudos de wazuh-alerts-*. Exportar con el menu del panel (arriba a la derecha) -> Inspect -> Data -> Download CSV.",
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "${DS_ELASTICSEARCH}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "filterable": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${DS_ELASTICSEARCH}"
+          },
+          "query": "*",
+          "alias": "",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "raw_data",
+              "settings": {
+                "size": "20"
+              }
+            }
+          ],
+          "bucketAggs": [],
+          "timeField": "@timestamp"
+        }
+      ]
     }
   ],
   "refresh": "1m",
